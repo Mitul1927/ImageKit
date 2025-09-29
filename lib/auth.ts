@@ -38,4 +38,27 @@ export const authOptions:NextAuthOptions = {
         })
     // ...add more providers here
     ],
+    callbacks:{
+        async jwt({token,u ser}){
+            if(user){
+                token.id = user.id;
+            }
+            return token;
+        },
+        async session({session,token,user}){
+            if(session.user){
+                session.user.id = token.id as string;
+            }
+            return session;
+        }
+    },
+    pages:{
+        signIn:"/login",
+        error:"/login",
+    },
+    session:{
+        strategy:"jwt",
+        maxAge : 30*24*60*60,
+    },
+    secret: process.env.NEXTAUTH_SECRET;
 };
