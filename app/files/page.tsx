@@ -15,6 +15,7 @@ interface FileItem {
   fileExtension: string;
 }
 
+
 type FilterType = "all" | "images" | "videos" | "documents";
 type SortField = "name" | "size" | "date";
 type SortOrder = "asc" | "desc";
@@ -40,7 +41,7 @@ export default function FilesPage() {
         const apiFiles = await response.json();
 
         // Transform API data to match our interface and add mock data for demo
-        const transformedFiles: FileItem[] = apiFiles.map((file: any) => ({
+        const transformedFiles: FileItem[] = (apiFiles as FileItem[]).map((file) => ({
           id: file.id,
           name: file.name,
           url: file.url,

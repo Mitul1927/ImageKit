@@ -10,10 +10,18 @@ interface UploadedFile {
   name: string;
   size: number;
   fileType: string;
-  fileId: string;
+  fileId?: string;
   thumbnailUrl?: string;
   fileExtension: string;
 }
+
+interface ImageKitResponse {
+  name: string;
+  url: string;
+  size?: number;
+  fileId?: string;
+}
+
 
 export default function UploadPage() {
   const { status } = useSession();
@@ -53,7 +61,7 @@ export default function UploadPage() {
     );
   }
 
-  const handleUploadSuccess = async (response: any) => {
+  const handleUploadSuccess = async (response: ImageKitResponse) => {
     console.log("ImageKit upload response:", response);
 
     try {

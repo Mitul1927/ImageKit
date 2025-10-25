@@ -22,6 +22,8 @@ export interface IVideo {
   size?: number;
   fileType?: string;
   fileExtension?: string;
+  createdAt?: Date; 
+  updatedAt?: Date;
 }
 
 const videoSchema = new Schema<IVideo>(

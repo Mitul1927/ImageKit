@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Video from "@/models/Video";
+import { IVideo } from "@/models/Video";
 
 export async function GET() {
   try {
@@ -12,16 +13,16 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const videos = await Video.find({}).sort({ createdAt: -1 }).lean();
+    const videos = await Video.find({}).sort({ createdAt: -1 }).lean<IVideo[]>();
 
     // Transform the data to match our FileItem interface
     const files = videos.map((video) => ({
-      id: video._id.toString(),
+      id: video._id?.toString() || "",
       name: video.title,
       url: video.videoUrl,
       size: video.size || 0, // Use stored size or default to 0
       type: video.fileType || "video", // Use stored file type or default to video
-      uploadedAt: video.createdAt?.toISOString() || new Date().toISOString(),
+      uploadedAt: video.createdAt?.toISOString()  ?? new Date().toISOString(),
       thumbnailUrl: video.thumbnailUrl,
       fileExtension:
         video.fileExtension || video.title.split(".").pop() || "mp4",
