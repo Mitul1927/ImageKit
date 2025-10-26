@@ -1,77 +1,73 @@
+// app/api/files/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import File from "@/models/File";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { connectToDatabase } from "@/lib/db";
-import Video from "@/models/Video";
-import { IVideo } from "@/models/Video";
+import {connectToDatabase} from "@/lib/db";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Get session
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  await connectToDatabase();
+
+  const userId = session.user.id;
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectToDatabase();
-    const videos = await Video.find({}).sort({ createdAt: -1 }).lean<IVideo[]>();
-
-    // Transform the data to match our FileItem interface
-    const files = videos.map((video) => ({
-      id: video._id?.toString() || "",
-      name: video.title,
-      url: video.videoUrl,
-      size: video.size || 0, // Use stored size or default to 0
-      type: video.fileType || "video", // Use stored file type or default to video
-      uploadedAt: video.createdAt?.toISOString()  ?? new Date().toISOString(),
-      thumbnailUrl: video.thumbnailUrl,
-      fileExtension:
-        video.fileExtension || video.title.split(".").pop() || "mp4",
-    }));
-
+    const files = await File.find({ userId }).sort({ createdAt: -1 });
     return NextResponse.json(files);
-  } catch (error) {
-    console.error("Error fetching files:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch files" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to fetch files" }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  // Get session
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  await connectToDatabase();
+
+  const userId = session.user.id;
+  const { name, url, size, fileType, fileExtension, thumbnailUrl } = await req.json();
+
+  // Validate fileType
+  if (!["video", "image", "document"].includes(fileType)) {
+    return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+  }
+
+  // Check user's tier and limits
+  const userFilesCount = await File.countDocuments({ userId });
+  const userTier = session.user.tier || "free";
+  const limit = userTier === "free" ? 2 : 100;
+
+  if (userFilesCount >= limit) {
+    return NextResponse.json(
+      { error: `Upload limit reached. Max ${limit} files for ${userTier} users.` },
+      { status: 403 }
+    );
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectToDatabase();
-    const body = await request.json();
-
-    // Create a new video/file record
-    const newFile = await Video.create({
-      title: body.name || "Untitled File",
-      description: body.description || "Uploaded file",
-      videoUrl: body.url,
-      thumbnailUrl: body.thumbnailUrl || body.url,
-      controls: true,
-      transformation: {
-        height: 1920,
-        width: 1080,
-        quality: 100,
-      },
-      // Store additional metadata
-      size: body.size || 0,
-      fileType: body.fileType || "document",
-      fileExtension: body.fileExtension || "unknown",
+    const newFile = new File({
+      userId,
+      name,
+      url,
+      size,
+      fileType,
+      fileExtension,
+      thumbnailUrl,
     });
 
+    await newFile.save();
     return NextResponse.json(newFile);
-  } catch (error) {
-    console.error("Error creating file:", error);
-    return NextResponse.json(
-      { error: "Failed to create file" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to save file" }, { status: 500 });
   }
 }
