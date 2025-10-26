@@ -11,7 +11,7 @@ export async function POST(request:NextRequest){
                 {status:400}
             )
         }
-        await connectToDatabase();
+        await connectToDatabase(); // 1 means connected
         const existingUser = await User.findOne({email});
         if(existingUser){
             return NextResponse.json(

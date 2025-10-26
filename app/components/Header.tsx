@@ -9,6 +9,25 @@ export default function Header() {
   const user = session?.user;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const getTierBadge = (tier: string | undefined) => {
+    if (!tier) tier = "free";
+    const colors = {
+      free: "bg-gray-200 text-gray-800",
+      pro: "bg-yellow-100 text-yellow-800",
+    };
+    const icons = {
+      free: "★", 
+      pro: "🌟",
+    };
+    return (
+      <span
+        className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${colors[tier as keyof typeof colors]}`}
+      >
+        {icons[tier as keyof typeof icons]} {tier.toUpperCase()}
+      </span>
+    );
+  };
+
   return (
     <header className="w-full bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -27,43 +46,25 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             {status === "authenticated" ? (
               <>
-                <Link
-                  href="/upload"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/upload" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Upload
                 </Link>
-                <Link
-                  href="/files"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/files" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   My Files
                 </Link>
-                <Link
-                  href="/upload-test"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/upload-test" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Test Upload
                 </Link>
               </>
             ) : (
               <>
-                <Link
-                  href="/upload-test"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/upload-test" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Upload Demo
                 </Link>
-                <Link
-                  href="/login"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Login
                 </Link>
-                <Link
-                  href="/register"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/register" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Register
                 </Link>
               </>
@@ -85,11 +86,11 @@ export default function Header() {
                       className="rounded-full ring-2 ring-blue-100 hover:ring-blue-300 transition-all duration-300"
                     />
                   )}
-                  <div className="text-sm">
+                  <div className="flex items-center text-sm">
                     <div className="font-medium text-gray-900">
                       {user?.name || user?.email?.split("@")[0]}
                     </div>
-                    <div className="text-gray-500 text-xs">{user?.email}</div>
+                    {getTierBadge(user?.tier)}
                   </div>
                 </div>
 
@@ -103,16 +104,10 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105"
-                >
+                <Link href="/login" className="px-4 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Sign In
                 </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
-                >
+                <Link href="/register" className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md">
                   Get Started
                 </Link>
               </div>
@@ -123,26 +118,11 @@ export default function Header() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-colors duration-300"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
             </button>
@@ -155,49 +135,25 @@ export default function Header() {
             <div className="px-4 py-4 space-y-3">
               {status === "authenticated" ? (
                 <>
-                  <Link
-                    href="/upload"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/upload" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Upload
                   </Link>
-                  <Link
-                    href="/files"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/files" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     My Files
                   </Link>
-                  <Link
-                    href="/upload-test"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Test Upload
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link
-                    href="/upload-test"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Upload Demo
                   </Link>
-                  <Link
-                    href="/login"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/login" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Login
                   </Link>
-                  <Link
-                    href="/register"
-                    className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/register" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Register
                   </Link>
                 </>
@@ -207,19 +163,11 @@ export default function Header() {
                 <div className="pt-3 border-t border-gray-200">
                   <div className="flex items-center space-x-3 px-3 py-2">
                     {user?.image && (
-                      <Image
-                        src={user.image}
-                        alt={user.name || user.email || "User"}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
+                      <Image src={user.image} alt={user.name || user.email || "User"} width={32} height={32} className="rounded-full" />
                     )}
-                    <div className="text-sm">
-                      <div className="font-medium text-gray-900">
-                        {user?.name || user?.email?.split("@")[0]}
-                      </div>
-                      <div className="text-gray-500 text-xs">{user?.email}</div>
+                    <div className="text-sm flex items-center">
+                      <div className="font-medium text-gray-900">{user?.name || user?.email?.split("@")[0]}</div>
+                      {getTierBadge(user?.tier)}
                     </div>
                   </div>
                   <button
