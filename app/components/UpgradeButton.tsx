@@ -19,7 +19,7 @@ export default function UpgradeButton() {
       amount: order.amount,
       currency: order.currency,
       name: "ImageKit App",
-      description: "Upgrade to Paid Tier",
+      description: "Upgrade to Pro Tier",
       order_id: order.id,
       handler: async () => {
         alert("Payment successful! Upgrading your account...");
@@ -42,7 +42,7 @@ const razorpay = new window.Razorpay(options);
         className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         disabled={loading}
       >
-        {loading ? "Processing..." : "Upgrade to Paid ₹100"}
+        {loading ? "Processing..." : "Upgrade to Pro ₹100"}
       </button>
     </>
   );

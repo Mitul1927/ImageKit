@@ -54,26 +54,35 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        await connectToDatabase();
+
+        const existingUser = await User.findOne({ email: user.email });
+
+        if (!existingUser) {
+          await User.create({
+            email: user.email,
+            password: "", 
+            googleId: profile?.sub,
+            tier: "free",
+          });
+          console.log("New Google user added:", user.email);
+        }
+      }
+      return true;
+    },
     async redirect({ url, baseUrl }) {
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
     async jwt({ token, user,account,profile }) {
-       if (account && account.provider === "google" && profile) {
-        const googleProfile = profile as GoogleProfile;
-
-        let dbUser = await User.findOne({ googleId: googleProfile.id });
-        if (!dbUser) {
-          dbUser = await User.create({
-            name: googleProfile.name,
-            email: googleProfile.email,
-            image: googleProfile.picture,
-            googleId: googleProfile.id,
-          });
-        }
+       if (account?.provider === "google" && user) {
+        const dbUser = await User.findOne({ email: user.email });
         token.id = dbUser._id.toString();
-        token.tier = dbUser.tier || "free";
+        token.tier = dbUser.tier;
+        token.googleId = dbUser.googleId;
       }
       if (user) {
         token.id = user.id;
@@ -82,9 +91,15 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.tier = token.tier as "free" | "paid";
+       if (!session.user?.email) return session;
+
+      await connectToDatabase();
+      const dbUser = await User.findOne({ email: session.user.email });
+
+      if (dbUser) {
+        session.user.id = dbUser._id.toString();
+        session.user.tier = dbUser.tier;
+        session.user.googleId = dbUser.googleId;
       }
       return session;
     },
