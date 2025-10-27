@@ -10,7 +10,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectToDatabase();
-  await User.updateOne({ email: session.user.email }, { tier: "paid" });
+  await User.updateOne({ email: session.user.email }, { tier: "pro" });
 
   return NextResponse.json({ success: true });
 }
