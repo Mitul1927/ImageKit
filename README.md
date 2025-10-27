@@ -14,6 +14,20 @@ pnpm dev
 bun dev
 ```
 
+.env file - 
+```bash
+MONGODB_URI=
+NEXTAUTH_SECRET= (userschoice)
+NEXT_PUBLIC_PUBLIC_KEY=
+NEXT_PUBLIC_URL_ENDPOINT=
+IMAGEKIT_PRIVATE_KEY=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+RZ_KEY=
+RZ_SECRET=
+NEXT_PUBLIC_RZ_KEY=(same as RZ_Key)
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
