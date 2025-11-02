@@ -1,3 +1,4 @@
+// types.d.ts
 import { Connection } from "mongoose";
 declare module "bcryptjs";
 
@@ -7,6 +8,12 @@ declare global {
     promise: Promise<Connection> | null;
   };
 
+  interface RazorpayResponse {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+  }
+
   interface RazorpayOptions {
     key: string;
     amount: number;
@@ -14,7 +21,7 @@ declare global {
     name: string;
     description: string;
     order_id: string;
-    handler: () => void;
+    handler: (response: RazorpayResponse) => void;
     theme: { color: string };
   }
 
@@ -27,4 +34,5 @@ declare global {
   }
 }
 
+// ❌ remove export to keep it as a global type declaration
 export {};

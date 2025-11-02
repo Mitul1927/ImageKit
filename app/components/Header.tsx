@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function Header() {
   const { data: session, status } = useSession();
   const user = session?.user;
+  // console.log("user = ",user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getTierBadge = (tier: string | undefined) => {
@@ -52,12 +53,15 @@ export default function Header() {
                 <Link href="/files" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   My Files
                 </Link>
+                {user?.tier==="free" ? <Link href="/upgrade" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
+                    Upgrade to pro...
+                  </Link>:<></>}
               </>
             ) : (
               <>
-                <Link href="/upload-test" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
+                {/* <Link href="/upload-test" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Upload Demo
-                </Link>
+                </Link> */}
                 <Link href="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-300 hover:scale-105">
                   Login
                 </Link>
@@ -94,7 +98,7 @@ export default function Header() {
                 {/* Sign Out Button */}
                 <button
                   onClick={() => signOut()}
-                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
+                  className="hidden md:flex px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 hover:scale-105 shadow-sm hover:shadow-md"
                 >
                   Sign Out
                 </button>
@@ -138,15 +142,18 @@ export default function Header() {
                   <Link href="/files" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     My Files
                   </Link>
-                  <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
+                  {/* <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Test Upload
-                  </Link>
+                  </Link> */}
+                  {user?.tier==="free" ? <Link href="/upgrade" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
+                    Upgrade
+                  </Link>:<></>}
                 </>
               ) : (
                 <>
-                  <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
+                  {/* <Link href="/upload-test" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Upload Demo
-                  </Link>
+                  </Link> */}
                   <Link href="/login" className="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-lg font-medium transition-colors duration-300" onClick={() => setIsMenuOpen(false)}>
                     Login
                   </Link>

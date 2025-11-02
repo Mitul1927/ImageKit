@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import FileUpload from "../components/FileUpload";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -30,6 +30,27 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [userPlan, setUserPlan] = useState<"free" | "pro">("free");
+  const [existingFiles, setExistingFiles] = useState<UploadedFile[]>([]);
+
+  
+  useEffect(() => {
+    const fetchUserPlanAndFiles = async () => {
+      try {
+        const res = await fetch("/api/user");
+        const data = await res.json();
+        setUserPlan(data.tier); 
+
+        const fileRes = await fetch("/api/files");
+        const filesData = await fileRes.json();
+        setExistingFiles(filesData);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    if (status === "authenticated") fetchUserPlanAndFiles();
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -63,9 +84,18 @@ export default function UploadPage() {
 
   const handleUploadSuccess = async (response: ImageKitResponse) => {
     console.log("ImageKit upload response:", response);
+    const uploadLimit = userPlan === "pro" ? 10 : 2;
+
+    if (existingFiles.length >= uploadLimit) {
+      setUploadError(
+        userPlan === "pro"
+          ? "You’ve reached your 10-file limit for the Pro plan."
+          : "Upload limit reached. Upgrade to Pro for 10 files."
+      );
+      return;
+    }
 
     try {
-      // Extract file information from ImageKit response
       const fileExtension =
         response.name.split(".").pop()?.toLowerCase() || "unknown";
       const isImage = ["jpg", "jpeg", "png", "gif", "svg", "webp"].includes(
@@ -75,10 +105,8 @@ export default function UploadPage() {
         fileExtension
       );
       const fileType = isImage ? "image" : isVideo ? "video" : "document";
-
-      // Create thumbnail URL for images (ImageKit can generate thumbnails)
       const thumbnailUrl = isImage
-        ? `${response.url}?tr=w-200,h-200,c-at_max` // ImageKit transformation for thumbnail
+        ? `${response.url}?tr=w-200,h-200,c-at_max` 
         : response.url;
 
       const fileData = {
@@ -91,7 +119,6 @@ export default function UploadPage() {
         fileExtension: fileExtension,
       };
 
-      // Save the uploaded file to the database
       const saveResponse = await fetch("/api/files", {
         method: "POST",
         headers: {
@@ -112,13 +139,11 @@ export default function UploadPage() {
         const savedFile = await saveResponse.json();
         console.log("File saved to database:", savedFile);
 
-        // Add to local state for immediate display
         setUploadedFiles((prev) => [...prev, fileData]);
         setIsUploading(false);
         setUploadProgress(0);
         setUploadError(null);
 
-        // Show success message
         alert(
           `${
             fileType.charAt(0).toUpperCase() + fileType.slice(1)
@@ -159,7 +184,6 @@ export default function UploadPage() {
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      // Handle file drop here
       console.log("File dropped:", e.dataTransfer.files[0]);
     }
   };
@@ -175,7 +199,6 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Upload Your Files
@@ -187,7 +210,6 @@ export default function UploadPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Upload Section */}
           <div className="lg:col-span-2">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200">
               <div className="text-center mb-8">
@@ -215,8 +237,14 @@ export default function UploadPage() {
                   Select images, videos, or documents to upload. Maximum file
                   size: 100MB
                 </p>
+                <p className="text-gray-600 text-sm mb-2">
+                  Plan: <span className="font-semibold capitalize">{userPlan}</span> — You can upload up to{" "}
+                  <span className="font-semibold">
+                    {userPlan === "pro" ? 10 : 2}
+                  </span>{" "}
+                  files.
+                </p>
 
-                {/* Drag and Drop Upload Area */}
                 <div
                   className={`border-2 border-dashed rounded-2xl p-12 transition-all duration-300 ${
                     dragActive
@@ -259,7 +287,6 @@ export default function UploadPage() {
                   </div>
                 </div>
 
-                {/* Progress Bar */}
                 {isUploading && (
                   <div className="mt-8">
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -275,7 +302,6 @@ export default function UploadPage() {
                   </div>
                 )}
 
-                {/* Error Display */}
                 {uploadError && (
                   <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-red-600 text-sm">{uploadError}</p>
@@ -284,7 +310,6 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {/* Recently Uploaded Files */}
             {uploadedFiles.length > 0 && (
               <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200">
                 <h3 className="text-2xl font-semibold text-gray-900 mb-6">
@@ -364,9 +389,7 @@ export default function UploadPage() {
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Upload Tips */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Upload Tips
@@ -438,8 +461,6 @@ export default function UploadPage() {
                 </li>
               </ul>
             </div>
-
-            {/* File Type Support */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Supported Formats
@@ -516,8 +537,6 @@ export default function UploadPage() {
                 </div>
               </div>
             </div>
-
-            {/* Quick Actions */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Quick Actions
