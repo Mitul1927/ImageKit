@@ -45,7 +45,7 @@ const RegisterPage = () => {
         <button
           type="button"
           onClick={() => window.location.assign("/login")}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 cursor-pointer"
         >
           Continue with Google
         </button>
@@ -88,7 +88,7 @@ const RegisterPage = () => {
           />
           <button
             type="submit"
-            className="w-full rounded-lg bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
+            className="w-full rounded-lg bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 cursor-pointer"
           >
             Register
           </button>
@@ -96,7 +96,7 @@ const RegisterPage = () => {
 
         <div className="text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <a className="underline" href="/login">
+          <a className="underline cursor-pointer" href="/login">
             Login
           </a>
         </div>

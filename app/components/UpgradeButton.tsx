@@ -1,9 +1,13 @@
 "use client";
 import Script from "next/script";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+// import type { RazorpayResponse } from "@/types";
+
 
 export default function UpgradeButton() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleUpgrade = async () => {
     setLoading(true);
@@ -21,10 +25,22 @@ export default function UpgradeButton() {
       name: "ImageKit App",
       description: "Upgrade to Pro Tier",
       order_id: order.id,
-      handler: async () => {
-        alert("Payment successful! Upgrading your account...");
-        await fetch("/api/upgrade", { method: "POST" });
-        window.location.reload();
+      handler: async function (response :RazorpayResponse ) {
+        const verifyRes = await fetch("/api/verifyPayment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(response), 
+        });
+
+        const result = await verifyRes.json();
+
+        if (result.success) {
+          alert("Payment successful! Upgrading your account...");
+          await fetch("/api/upgrade", { method: "POST" });
+          router.push("/");
+        } else {
+          alert("Payment verification failed. Please contact support.");
+        }
       },
       theme: { color: "#2A4494" },
     };

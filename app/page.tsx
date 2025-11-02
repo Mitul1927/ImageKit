@@ -40,7 +40,7 @@ export default function Home() {
 
   return (
     <div className="font-sans min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Header />
+      {/* <Header /> */}
 
       {/* Hero Section */}
       <main className="relative overflow-hidden">

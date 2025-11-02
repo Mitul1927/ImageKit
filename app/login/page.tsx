@@ -32,7 +32,7 @@ const LoginPage = () => {
         <button
           type="button"
           onClick={() => signIn("google", { callbackUrl: "/" })}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium hover:bg-gray-50 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +91,7 @@ const LoginPage = () => {
           />
           <button
             type="submit"
-            className="w-full rounded-lg bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
+            className="w-full rounded-lg bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 cursor-pointer"
           >
             Login
           </button>
@@ -100,7 +100,7 @@ const LoginPage = () => {
         <div className="text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
           <button
-            className="underline"
+            className="underline cursor-pointer"
             onClick={() => router.push("/register")}
           >
             Register
