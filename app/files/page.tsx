@@ -31,8 +31,22 @@ export default function FilesPage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copyingId, setCopyingId] = useState<string | null>(null);
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
-  // Fetch files from API
+  const btnBase =
+    "inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const btnDownload =
+    `${btnBase} bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400`;
+  const btnShare =
+    `${btnBase} bg-purple-100 text-purple-700 hover:bg-purple-200 focus:ring-purple-300`;
+  const btnDelete =
+    `${btnBase} bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-300`;
+  const btnPrimary =
+    `${btnBase} bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-400`;
+
+
   const fetchFiles = async () => {
     try {
       setRefreshing(true);
@@ -40,12 +54,11 @@ export default function FilesPage() {
       if (response.ok) {
         const apiFiles = await response.json();
 
-        // Transform API data to match our interface and add mock data for demo
         const transformedFiles: FileItem[] = (apiFiles as FileItem[]).map((file) => ({
           id: file.id,
           name: file.name,
           url: file.url,
-          size: Math.floor(Math.random() * 10000000) + 100000, // Random size for demo
+          size: Math.floor(Math.random() * 10000000) + 100000, 
           type:
             file.fileExtension === "mp4" || file.fileExtension === "mov"
               ? "video"
@@ -64,13 +77,11 @@ export default function FilesPage() {
         setFilteredFiles(transformedFiles);
       } else {
         console.error("Failed to fetch files");
-        // Fallback to empty array
         setFiles([]);
         setFilteredFiles([]);
       }
     } catch (error) {
       console.error("Error fetching files:", error);
-      // Fallback to empty array
       setFiles([]);
       setFilteredFiles([]);
     } finally {
@@ -83,23 +94,19 @@ export default function FilesPage() {
     fetchFiles();
   }, []);
 
-  // Filter and sort files
   useEffect(() => {
     let filtered = [...files];
 
-    // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter((file) =>
         file.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply type filter
     if (filter !== "all") {
       filtered = filtered.filter((file) => file.type === filter);
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let aValue: string | number;
       let bValue: string | number;
@@ -148,6 +155,77 @@ export default function FilesPage() {
       minute: "2-digit",
     });
   };
+const handleDelete = async (id: string) => {
+  const prev = files;
+  setDeletingId(id);
+  setFiles(list => list.filter(f => f.id !== id));  
+
+  const res = await fetch(`/api/files/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    setFiles(prev);
+    console.error("Delete failed");
+  }
+  setDeletingId(null);
+};
+
+
+const download = (id: string) => {
+  window.location.href = `/api/files/${id}`;
+};
+
+const share = async (id: string) => {
+  setCopyMessage(null);
+  setCopyingId(id);
+
+  const res = await fetch(`/api/files/${id}/share`, { method: "POST" });
+  if (!res.ok) {
+    setCopyingId(null);
+    setCopyMessage("Failed to create share link");
+    return;
+  }
+  const { shareUrl } = await res.json();
+
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopyMessage("Link copied to clipboard");
+    setCopyingId(null);
+    return;
+  } catch (err) {
+    console.warn("navigator.clipboard failed:", err);
+  }
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = shareUrl;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    const ok = document.execCommand("copy");
+    document.body.removeChild(textarea);
+
+    if (ok) {
+      setCopyMessage("Link copied to clipboard");
+      setCopyingId(null);
+      return;
+    }
+    throw new Error("execCommand returned false");
+  } catch (err) {
+    console.warn("execCommand fallback failed:", err);
+  }
+
+  try {
+    window.prompt("Copy this link", shareUrl);
+    setCopyMessage("Use prompt to copy link");
+  } catch {
+    setCopyMessage("Could not copy automatically — link shown in console");
+    console.log("Share URL:", shareUrl);
+  } finally {
+    setCopyingId(null);
+  }
+};
 
   const getFileIcon = (type: string, extension: string) => {
     switch (type) {
@@ -434,7 +512,6 @@ export default function FilesPage() {
               </button>
             </div>
 
-            {/* View Mode Toggle */}
             <div className="flex gap-2">
               <button
                 onClick={() => setViewMode("grid")}
@@ -484,7 +561,6 @@ export default function FilesPage() {
           </div>
         </div>
 
-        {/* Files Display */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200">
           {filteredFiles.length === 0 ? (
             <div className="text-center py-12">
@@ -572,12 +648,33 @@ export default function FilesPage() {
                             href={file.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-300 text-center"
+                            className={btnPrimary + " flex-1 text-center"}
                           >
                             View
                           </a>
-                          <button className="px-3 py-1.5 bg-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                          <button
+                            onClick={() => download(file.id)}
+                            className={btnDownload}
+                            aria-label="Download file"
+                          >
                             Download
+                          </button>
+                          <button
+                            onClick={() => share(file.id)}
+                            className={btnShare}
+                            disabled={copyingId === file.id}
+                          >
+                            {copyingId === file.id ? "Copying…" : "Share"}
+                          </button>
+                          {copyMessage && copyingId === null && (
+                            <div className="text-xs text-gray-500 mt-1">{copyMessage}</div>
+                          )}
+
+                          <button
+                            onClick={() => handleDelete(file.id)}
+                            disabled={deletingId === file.id}
+                            className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                            {deletingId === file.id ? "Deleting…" : "Delete"}
                           </button>
                         </div>
                       </div>
@@ -623,12 +720,29 @@ export default function FilesPage() {
                           href={file.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                          className={btnPrimary}
                         >
                           View
                         </a>
-                        <button className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors duration-300">
+                        <button onClick={() => download(file.id)} className={btnDownload}>
                           Download
+                        </button>
+                        <button
+                          onClick={() => share(file.id)}
+                          className={btnShare}
+                          disabled={copyingId === file.id}
+                        >
+                          {copyingId === file.id ? "Copying…" : "Share"}
+                        </button>
+                        {copyMessage && copyingId === null && (
+                          <div className="text-xs text-gray-500 mt-1">{copyMessage}</div>
+                        )}
+
+                        <button
+                          onClick={() => handleDelete(file.id)}
+                          disabled={deletingId === file.id}
+                          className="px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                          {deletingId === file.id ? "Deleting…" : "Delete"}
                         </button>
                       </div>
                     </div>

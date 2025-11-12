@@ -15,7 +15,12 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
 
     const files = await File.find({ userId: session.user.id }).sort({ createdAt: -1 });
-    return NextResponse.json(files, { status: 200 });
+    const plain = files.map(f => ({
+      id: String(f._id),
+      name: f.name, url: f.url, size: f.size, fileExtension: f.fileExtension,
+      thumbnailUrl: f.thumbnailUrl, uploadedAt: f.createdAt, type: f.fileType
+    }));
+    return NextResponse.json(plain, { status: 200 });
   } catch (err) {
     console.error("Error fetching files:", err);
     return NextResponse.json({ error: "Failed to fetch files" }, { status: 500 });
@@ -63,6 +68,7 @@ export async function POST(req: NextRequest) {
       fileType,
       fileExtension,
       thumbnailUrl,
+      isPublic:true
     });
 
     await newFile.save();
