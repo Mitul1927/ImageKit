@@ -9,6 +9,9 @@ export interface IFile extends Document {
   size: number;
   fileExtension: string;
   createdAt: Date;
+  imageKitFileId:string;
+  isPublic : boolean;
+  shareId:string;
 }
 
 
@@ -21,7 +24,10 @@ const FileSchema: Schema = new Schema<IFile>({
   size: { type: Number, required: true },
   fileExtension: String,
   createdAt: { type: Date, default: Date.now },
-});
+  imageKitFileId: String, 
+  isPublic: { type: Boolean, default: false },
+  shareId: { type: String, index: true, sparse: true }
+},{timestamps:true});
 
 
 export default mongoose.models.File || mongoose.model<IFile>("File", FileSchema);
