@@ -98,10 +98,10 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
-                href="/upload-test"
+                href="/upload"
                 className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <span className="relative z-10">Try Upload Demo</span>
+                <span className="relative z-10">Try Uploading</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
 
@@ -251,10 +251,10 @@ export default function Home() {
                 Create Account
               </Link>
               <Link
-                href="/upload-test"
+                href="/upload"
                 className="px-6 py-3 border border-gray-600 text-gray-300 font-semibold rounded-lg hover:border-gray-500 hover:text-white transition-colors duration-300"
               >
-                Try Demo
+                Try Uploading
               </Link>
             </div>
           </div>

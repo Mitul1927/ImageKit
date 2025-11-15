@@ -1,11 +1,29 @@
-// app/s/[shareId]/route.ts
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import File from "@/models/File";
 
-export async function GET(_: Request, { params }: { params: { shareId: string } }) {
-  await connectToDatabase();
-  const f = await File.findOne({ shareId: params.shareId, isPublic: true });
-  if (!f) return NextResponse.redirect("/404");
-  return NextResponse.redirect(`/api/files/${f._id}`); // downloads with filename
+type RouteParams = { shareId: string };
+
+export async function GET(request: Request, context: { params: Promise<RouteParams> }) {
+  try {
+    const { shareId } = await context.params;
+
+    if (!shareId) {
+      console.error("GET /s/[shareId]: missing shareId");
+      return NextResponse.redirect("/404");
+    }
+
+    await connectToDatabase();
+
+    const file = await File.findOne({ shareId, isPublic: true });
+    if (!file) {
+      return NextResponse.redirect("/404");
+    }
+    const downloadUrl = new URL(`/api/files/${file._id}`, request.url);
+
+    return NextResponse.redirect(downloadUrl);
+  } catch (err) {
+    console.error("GET /s/[shareId] error:", err);
+    return new NextResponse("Internal server error", { status: 500 });
+  }
 }
